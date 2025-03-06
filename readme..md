@@ -2,10 +2,14 @@
 # BibTeX Modifier
 
 ## Project Functionality
-This project  in a BibTeX file. The main functionalities include:
-1. remove unused items and sort the items in .bib according to a given .aux file
-2. replace the journal name to Corresponding abbreviation according to a given IEEEfull.bib
-3. updates the year and month fields of citations according to local PDF files (by Everything tool)
+
+This project modifies `.bib` files with the following key functionalities:
+
+1. **Remove Unused Entries & Sort**: Filters out unused entries and sorts the remaining entries based on citation order in a given `.aux` file.
+2. **Journal Name Convertion**: Replaces journal names with their string definitions according to the provided [IEEEfull.bib](https://ctan.org/tex-archive/macros/latex/contrib/IEEEtran/bibtex) mapping.
+3. **Title Protection**: Encloses citation titles with additional braces to prevent BibTeX from automatically converting text to lowercase.
+4. **Date Update**: Automatically updates the `year` and `month` fields of citations by extracting publication dates from local PDF files using the Everything search tool.
+
 
 
 ## Installation Guide
@@ -78,7 +82,7 @@ if found any .pdf files in your system that match the citation name, or
 ```
 -----------------Input new path / month and year like '2000 jun' / 'S' to skip / 'SS' to skip all / 'DD' to auto run all:
 ```
-if found nonthing match the citation.
+if nothing was found.
 Follow the instructions to input. `DD` means the program auto deal with all citations, it will skip a citation if found nothing and use the first match if found any files.
 The program use **PyPDF2.PdfReader** to read the .pdf files and search for any strings like
 ```
