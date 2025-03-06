@@ -25,12 +25,12 @@ def extract_date_from_pdf(pdf_path):
             # only extract from the first page
             for page in reader.pages:
                 if page.extract_text():
-                    text = page.extract_text()
+                    src_text = page.extract_text()
                     break
 
-        # 将text中的所有连续空白字符替换为一个空格
-        clean_text = re.sub(r'\s+', ' ', text)
-        # print(clean_text)
+        # Replace all consecutive whitespace characters with a single space  
+        text = re.sub(r'\s+', ' ', src_text)
+        # print(text)
 
         # match: VOL. 11, NO. 5, 1 MARCH 2024
         # VOL. 16, NO. 2, FEBRUARY 2017
@@ -74,7 +74,7 @@ def extract_date_from_pdf(pdf_path):
     return None
 
 
-# 使用 Everything 搜索 PDF 文件路径
+# Search PDF file paths using Everything and extract dates
 def search_and_extract_date_from_pdf(title, es_cmd_exe_path, auto_run_all=False):
     query = [word for word in title.split(' ') if len(word) > 3]
     print(f"------------Search results for \"{' '.join(query)}\":")
@@ -155,7 +155,7 @@ def search_and_extract_date_from_pdf(title, es_cmd_exe_path, auto_run_all=False)
             print(f"\033[91mWarning: Error processing : {e}\033[0m")
 
 
-# 主程序
+# Main program
 def update_bib_year_and_month(entries, es_cmd_path):
     # entries : {'alice2000':{}, }
     skip_all = False
@@ -163,7 +163,7 @@ def update_bib_year_and_month(entries, es_cmd_path):
     for entry_name in entries:
         entry = entries[entry_name]
         if not skip_all:
-            # 替换非字母字符为一个空格
+            # Replace non-alphabetic characters with a space
             cleaned_title = re.sub(r'[^a-zA-Z]+', ' ', entry['title']).strip().lower()
             date_info, new_ope = search_and_extract_date_from_pdf(cleaned_title, es_cmd_path, auto_run_all=auto_run_all)
             if date_info:
@@ -180,8 +180,8 @@ def update_bib_year_and_month(entries, es_cmd_path):
 
 def extract_braced(text, start_index):
     """
-    从 text 中，从 start_index 开始（要求该位置为 '{'）提取出匹配的最外层括号内容，
-    返回 (braced_string, end_index)；braced_string 包括最外层花括号。
+    Extract the outermost braced content from text starting at start_index (assumed to be '{').
+    Returns (braced_string, end_index); braced_string includes the outermost braces.
     """
     count = 0
     i = start_index
@@ -197,7 +197,7 @@ def extract_braced(text, start_index):
 
 def normalize_string(s):
     """
-    将字符串 s 内的所有花括号去掉，空白标准化并转为小写，用于宽松匹配。
+    Normalize string s by removing braces, standardizing whitespace, and converting to lowercase for fuzzy matching.
     """
     no_braces = re.sub(r'[{}]', '', s)
     normalized = ' '.join(no_braces.split()).lower()
@@ -205,16 +205,16 @@ def normalize_string(s):
 
 def parse_ieee_mapping(ieee_path):
     """
-    从IEEEfull.bib中解析出映射：
-      key   : 规范化后的期刊全名（去除所有花括号、空白标准化、小写）
-      value : 对应的缩写（例如IEEE_J_WCOM）
-    假设IEEEfull.bib中的条目形如：
-      @STRING{IEEE_J_WCOM = "{IEEE} Transactions on Wireless Communications"}
+    Parse mappings from IEEEfull.bib:
+        key : Normalized journal full name (braces removed, whitespace standardized, lowercase)
+        value : Corresponding abbreviation (e.g., IEEE_J_WCOM)
+    Assumes entries in IEEEfull.bib are formatted as:
+    @STRING{IEEE_J_WCOM = "{IEEE} Transactions on Wireless Communications"}
     """
     mapping = {}
     with open(ieee_path, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
-    # 用正则查找@STRING{ ... =
+    # Use regex to find @STRING{ ... =
     pattern = re.compile(r'@STRING\s*\{\s*([^=\s]+)\s*=\s*"([^"]+)"\s*}', flags=re.IGNORECASE)
     pos = 0
     while True:
@@ -232,32 +232,31 @@ def parse_ieee_mapping(ieee_path):
 
 
 def remove_outer_braces(s):
-    # 匹配字符串最外层的成对花括号
+    # Remove outermost paired braces from string
     pattern = r'^\{\s*(.*?)\s*\}$'
     while True:
         match = re.match(pattern, s)
         if match:
-            s = match.group(1)  # 提取内部内容
+            s = match.group(1)  # Extract inner content
         else:
             break
     return s
 
 def process_title(title):
     """
-    修改 entry 中 title 字段：
-    找到 "title=" 后第一个 '{' 到匹配的最外层 '}'，
-    如果内部内容未被双层括号包裹，则用双层括号包裹。
+    Process the title field in an entry:
+    Find the first '{' after "title=" and its matching outermost '}'.
+    If the inner content is not wrapped in double braces, add double braces.
     """
     return '{{' + remove_outer_braces(title) + '}}'
 
 
 def process_journal_and_booktitle(entry, mapping):
     """
-    对 entry 中的 journal 和 booktitle 字段进行处理，调用 process_field 进行替换。
+    Process journal and booktitle fields in an entry by replacing with abbreviations using mapping.
     """
     for field in ['journal', 'booktitle']:
         if field in entry:
-            # 对内部内容进行规范化处理
             normalized = normalize_string(entry[field])
             if normalized in mapping:
                 entry[field] = mapping[normalized]
@@ -265,7 +264,7 @@ def process_journal_and_booktitle(entry, mapping):
 
 
 def parse_aux(aux_path):
-    # 从 .aux 文件中获取被引用的条目编号
+    # Extract cited entry keys from .aux file
     citations = {}
     with open(aux_path, 'r', encoding='utf-8') as aux_file:
         for line in aux_file:
@@ -277,14 +276,14 @@ def parse_aux(aux_path):
 
 
 def parse_bib(bib_path):
-    """将 .bib 文件按条目分割"""
+    """Split .bib file into individual entries"""
     with open(bib_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    # 以行首 @ 符号分割（假设每个条目以 @ 开头）
+    # Split by lines starting with @ (assumes entries start with @)
     entries = re.split(r'\n(?=@)', content)
     entries_in_k_v = {}
     for entry in entries:
-        # 进一步解析为各个键值对
+        # Parse into key-value pairs
         m = re.match(r'\s*@(?P<type>\w+)\{(?P<name>\w+),', entry, flags=re.IGNORECASE)
         if not m:
             continue
@@ -329,10 +328,10 @@ def parse_bib(bib_path):
 
 def filter_sort_deduplicate(entries_in_k_v, citations, mapping):
     """
-    1. 保留在 .aux 文件中被引用的条目
-    2. 去除重复条目（通过标准化文本）
-    3. 对每个条目的 title、journal、booktitle 字段进行处理
-    4. 按引用编号排序
+    1. Keep entries cited in .aux file
+    2. Remove duplicates via normalized text
+    3. Process title, journal, and booktitle fields
+    4. Sort by citation number
     """
     for name in citations:
         if name not in entries_in_k_v:
@@ -344,7 +343,7 @@ def filter_sort_deduplicate(entries_in_k_v, citations, mapping):
 
 
 def write_bib(new_path, entries):
-    """将处理后的条目写入新的 .bib 文件"""
+    """Write processed entries to a new .bib file"""
     with open(new_path, 'w', encoding='utf-8') as f:
         for entry_name in entries:
             entry = entries[entry_name]
@@ -356,32 +355,37 @@ def write_bib(new_path, entries):
             f.write('}\n\n')
 
 
-# 示例调用，路径请根据实际文件修改：
-ieee_path = r'xxx\IEEEfull.bib'
+#Example usage (modify paths according to actual files):
 
-aux_path = r'xxx\rff_draft.aux'
+ieee_path = r'your/path/IEEEfull.bib'
+aux_path = r'your/path/your_project.aux'
+bib_path = r'your/path/original.bib'
+new_bib_path = r'your/path/updated.bib'
 
-# skip_date_check = True # 如果没有安装everything或者不想更新论文日期
-skip_date_check = False   # 如果已经安装everything命令行版
+# Enable if Everything is not installed or date update is not needed
+# skip_date_check = True 
+# Enable if Everything is installed
+skip_date_check = False  
 
-es_cmd_path = r'xxx\es.exe'
-# es_cmd_path = None        # 系统默认的everything路径
+es_cmd_path = r'your/path/es.exe'
+# es_cmd_path = None        # Use default Everything path
 
-bib_path = r'xxxx\ref_test.bib'
-new_bib_path = r'xxx\ref_test_2.bib'
 
-# 从 .aux 文件中获取被引用的条目编号
+# Extract cited entries from .aux file
 citations = parse_aux(aux_path)
-# 解析 IEEEfull.bib 得到映射字典
+
+# Parse IEEEfull.bib to build abbreviation mapping
 mapping = parse_ieee_mapping(ieee_path)
-# 解析 .bib 文件
+
+# Parse .bib file
 entries_in_k_v = parse_bib(bib_path)
-# 过滤、去重、处理字段并排序
+
+# Filter, deduplicate, process fields, and sort
 filtered_entries_in_k_v = filter_sort_deduplicate(entries_in_k_v, citations, mapping)
 if not skip_date_check:
-    # 更新论文日期
+    # Update citation dates
     new_entries = update_bib_year_and_month(filtered_entries_in_k_v, es_cmd_path)
 else:
     new_entries = filtered_entries_in_k_v
 write_bib(new_bib_path, new_entries)
-print(f"新文件已生成: {new_bib_path}")
+print(f"New file generated: {new_bib_path}")
