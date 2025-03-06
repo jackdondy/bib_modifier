@@ -20,8 +20,8 @@ We recommend using Conda to manage dependencies. Follow these steps to create an
 ```bash
 # Create the environment
 conda create -n bib_modifier python=3.12 conda-forge::pypdf2
-
 conda activate bib_modifier
+git clone https://github.com/jackdondy/bib_modifier.git
 ```
 ### Step 2: Install Everything Command-Line Interface (Optional)
 The script optionally uses the Everything search tool to find PDF files. 
