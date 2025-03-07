@@ -357,18 +357,18 @@ def write_bib(new_path, entries):
 
 #Example usage (modify paths according to actual files):
 
-ieee_path = r'C:\Users\2023-11-30\Desktop\rf_fingerprint\paper_rf_fingerprint_2407\lib\IEEEfull.bib'
-aux_path = r'C:\Users\2023-11-30\Desktop\rf_fingerprint\paper_rf_fingerprint_2407\rff_draft.aux'
-bib_path = r'C:\Users\2023-11-30\Desktop\rf_fingerprint\paper_rf_fingerprint_2407\ref_test.bib'
-new_bib_path = r'C:\Users\2023-11-30\Desktop\rf_fingerprint\paper_rf_fingerprint_2407\ref_test2.bib'
+ieee_path = r'your/path/IEEEfull.bib'
+aux_path = r'your/path/your_project.aux'
+bib_path = r'your/path/original.bib'
+new_bib_path = r'your/path/updated.bib'
 
 # Enable if Everything is not installed or date update is not needed
 # skip_date_check = True 
 # Enable if Everything is installed
 skip_date_check = False  
 
-# es_cmd_path = r'C:\Users\2023-11-30\Desktop\ES-1.1.0.27.x86\es.exe'
-es_cmd_path = None        # Use default Everything path
+es_cmd_path = r'your/path/es.exe'
+# es_cmd_path = None        # Use default Everything path
 
 
 # Extract cited entries from .aux file
