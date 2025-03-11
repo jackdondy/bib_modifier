@@ -66,9 +66,13 @@ You can test default Everything CLI by enter `es` in a Windows command line.
 es_cmd_path = r'your/path/es.exe'
 # es_cmd_path = None        # Use default Everything path
 ```
+For GUI version, just assign files through the file browser:
+<img width="308" alt="image" src="https://github.com/user-attachments/assets/774113a0-cb22-46f1-a8a4-6b4665104e00" />
+Click `Save Config` button, then the program will produce a `config.json` file in the current folder, and this .json file will be load automatically on next run.
 
 ### Step 3: Run the Script
-Execute the script in your terminal:
+For GUI version, just click `OK` button.
+For pure command line version, Execute the script in your terminal:
 
 ```bash
 python main_with_date_check.py
