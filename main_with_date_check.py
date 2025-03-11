@@ -333,13 +333,15 @@ def filter_sort_deduplicate(entries_in_k_v, citations, mapping):
     3. Process title, journal, and booktitle fields
     4. Sort by citation number
     """
+    filtered_entries_in_k_v = {}
     for name in citations:
         if name not in entries_in_k_v:
+            print(f"\033[91mWarning: Citation:{name} not found in .bib!\033[0m")
             continue
-        select_entry = entries_in_k_v[name]
+        select_entry = filtered_entries_in_k_v[name] = entries_in_k_v[name]
         select_entry['title'] = process_title(select_entry['title'])
-        entries_in_k_v[name] = process_journal_and_booktitle(select_entry, mapping)
-    return entries_in_k_v
+        select_entry[name] = process_journal_and_booktitle(select_entry, mapping)
+    return filtered_entries_in_k_v
 
 
 def write_bib(new_path, entries):
