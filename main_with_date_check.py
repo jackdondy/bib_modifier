@@ -284,7 +284,7 @@ def parse_bib(bib_path):
     entries_in_k_v = {}
     for entry in entries:
         # Parse into key-value pairs
-        m = re.match(r'\s*@(?P<type>\w+)\{(?P<name>\w+),', entry, flags=re.IGNORECASE)
+        m = re.match(r'\s*@(?P<type>\S+)\{(?P<name>\S+),', entry, flags=re.IGNORECASE)
         if not m:
             continue
         type = m.groupdict()['type']
