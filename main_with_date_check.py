@@ -340,7 +340,7 @@ def filter_sort_deduplicate(entries_in_k_v, citations, mapping):
             continue
         select_entry = filtered_entries_in_k_v[name] = entries_in_k_v[name]
         select_entry['title'] = process_title(select_entry['title'])
-        select_entry[name] = process_journal_and_booktitle(select_entry, mapping)
+        filtered_entries_in_k_v[name] = process_journal_and_booktitle(select_entry, mapping)
     return filtered_entries_in_k_v
 
 
