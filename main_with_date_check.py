@@ -2,7 +2,7 @@ import os
 import json
 import tkinter as tk
 from tkinter import filedialog, messagebox
-
+import webbrowser
 from lib import process_files
 
 
@@ -15,6 +15,7 @@ def load_config():
 def save_config():
     config = {
         "ieee_path": ieee_var.get(),
+        "word_abbr_path": word_abbr_var.get(),
         "aux_path": aux_var.get(),
         "bib_path": bib_var.get(),
         "new_bib_path": new_bib_var.get(),
@@ -51,6 +52,7 @@ def run_program():
 
     process_files(aux_path=config['aux_path'],
                   ieee_full_bib_path=config['ieee_path'],
+                  word_addr_csv_path=config['word_abbr_path'],
                   bib_path=config['bib_path'],
                   skip_date_check=config['skip_date_check'],
                   es_cmd_path=config['es_cmd_path'],
@@ -65,21 +67,44 @@ root.title("Configuration Tool")
 root.resizable(True, True)
 
 ieee_var = tk.StringVar(value=config.get("ieee_path", ""))
+word_abbr_var = tk.StringVar(value=config.get("word_abbr_path", ""))
 aux_var = tk.StringVar(value=config.get("aux_path", ""))
 bib_var = tk.StringVar(value=config.get("bib_path", ""))
 new_bib_var = tk.StringVar(value=config.get("new_bib_path", ""))
 skip_var = tk.StringVar(value=str(config.get("skip_date_check", "False")))
 es_var = tk.StringVar(value=config.get("es_cmd_path", ""))
 
-def create_file_input(label, var):
+def create_file_input(label, var, url=None):  # 新增 url 参数
     frame = tk.Frame(root)
-    tk.Label(frame, text=label, width=15).pack(side=tk.LEFT)
+    # 创建标签并配置样式和事件
+    if url:
+        lbl = tk.Label(
+            frame,
+            text=label,
+            width=15,
+            fg="blue",  # 设置蓝色（仅当有 URL 时）
+            cursor="hand2"  # 手型光标（仅当有 URL 时）
+        )
+        lbl.bind("<Button-1>", lambda e: webbrowser.open(url))  # 绑定点击事件
+    else:
+        lbl = tk.Label(
+            frame,
+            text=label,
+            width=15,
+            fg="black",
+            cursor=""
+        )
+    lbl.pack(side=tk.LEFT)
+    # 原有 Entry 和 Button 代码保持不变
     entry = tk.Entry(frame, textvariable=var)
     entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
     tk.Button(frame, text="Browse", command=lambda: browse_file(var)).pack(side=tk.LEFT)
     frame.pack(pady=2, padx=5, fill=tk.X)
+    return frame
 
-create_file_input("IEEEfull.bib Path", ieee_var)
+
+create_file_input("IEEEfull.bib Path", ieee_var, url="https://ctan.org/tex-archive/macros/latex/contrib/IEEEtran/bibtex")
+create_file_input("ITWA_XXX.csv Path", word_abbr_var, url="https://www.issn.org/wp-content/uploads/2024/02/ltwa_current.csv")
 create_file_input(".aux Path", aux_var)
 create_file_input(".bib Path", bib_var)
 create_file_input("New .bib Path", new_bib_var)

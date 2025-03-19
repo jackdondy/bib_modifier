@@ -6,9 +6,10 @@
 This project modifies `.bib` files with the following key functionalities:
 
 1. **Remove Unused Entries & Sort**: Filters out unused entries and sorts the remaining entries based on citation order in a given `.aux` file.
-2. **Journal Name Convertion**: Replaces journal names with their string definitions according to the provided [IEEEfull.bib](https://ctan.org/tex-archive/macros/latex/contrib/IEEEtran/bibtex) mapping.
-3. **Title Protection**: Encloses citation titles with additional braces to prevent BibTeX from automatically converting text to lowercase.
-4. **Date Update**: Automatically updates the `year` and `month` fields of citations by extracting publication dates from local PDF files using the Everything search tool.
+2. **IEEE Journal Name Convertion**: Replaces journal names with their string definitions according to the provided [IEEEfull.bib](https://ctan.org/tex-archive/macros/latex/contrib/IEEEtran/bibtex) mapping.
+3. **Abbreviation for Journals and Conferences**: Using [.CSV file](https://www.issn.org/wp-content/uploads/2024/02/ltwa_current.csv) from [ITWA](https://www.issn.org/services/online-services/access-to-the-ltwa/)
+4. **Title Protection**: Encloses citation titles with additional braces to prevent BibTeX from automatically converting text to lowercase.
+5. **Date Update**: Automatically updates the `year` and `month` fields of citations by extracting publication dates from local PDF files using the Everything search tool.
 
 
 
@@ -67,7 +68,9 @@ es_cmd_path = r'your/path/es.exe'
 # es_cmd_path = None        # Use default Everything path
 ```
 For GUI version, just assign files through the file browser:
+
 <img width="308" alt="image" src="https://github.com/user-attachments/assets/774113a0-cb22-46f1-a8a4-6b4665104e00" />
+
 Click `Save Config` button, then the program will produce a `config.json` file in the current folder, and this .json file will be load automatically on next run.
 
 ### Step 3: Run the Script

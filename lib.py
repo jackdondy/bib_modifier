@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
 import subprocess
+import time
+
 import PyPDF2
 import os
 
@@ -196,10 +198,11 @@ def extract_braced(text, start_index):
 
 def normalize_string(s):
     """
-    Normalize string s by removing braces, standardizing whitespace, and converting to lowercase for fuzzy matching.
+    Normalize string s by removing braces, standardizing whitespace for fuzzy matching.
+    Not converting to lowercase !!!
     """
     no_braces = re.sub(r'[{}]', '', s)
-    normalized = ' '.join(no_braces.split()).lower()
+    normalized = ' '.join(no_braces.split())
     return normalized
 
 def parse_ieee_mapping(ieee_path):
@@ -223,12 +226,36 @@ def parse_ieee_mapping(ieee_path):
         string_entry = m.group(1)
         i = m.end()
         full_name = m.group(2)
-        normalized_full = normalize_string(full_name)
+        normalized_full = normalize_string(full_name).lower()
         mapping[normalized_full] = string_entry
         pos = i + 1
 
     return mapping
 
+
+def parse_ITWA_word_mapping(word_addr_csv_path):
+    with open(word_addr_csv_path, mode='r', encoding='utf-8') as f:
+        res = f.read()
+
+    res2 = res.splitlines()
+    word_str_to_pattern_and_mapping = {}
+    for line in res2:
+        if line.startswith('WORD'):
+            continue
+        r3 = line.split('\t')
+        assert len(r3) == 3
+        word_str, new_word, _ = r3
+        if new_word != '':
+            if word_str in word_str_to_pattern_and_mapping:
+                print("warning! duplicate:", word_str)
+            if word_str.startswith('-'):
+                pattern = re.compile(rf'\w+{word_str[1:]}')
+            elif word_str.endswith('-'):
+                pattern = re.compile(rf'{word_str[:-1]}\w+')
+            else:
+                pattern = re.compile(rf'{word_str}')
+            word_str_to_pattern_and_mapping[word_str] = [pattern, new_word]
+    return word_str_to_pattern_and_mapping
 
 def remove_outer_braces(s):
     # Remove outermost paired braces from string
@@ -249,16 +276,43 @@ def process_title(title):
     """
     return '{{' + remove_outer_braces(title) + '}}'
 
+def perform_word_mapping(word_mapping, word):
+    """
+    Process a word of journal and booktitle names using word_mapping.
+    If not match, return  None.
+    """
+    word = word.lower()
+    for key_word_str in word_mapping:
+        _pattern, new_str = word_mapping[key_word_str]
+        if _pattern.match(word):
+            return new_str[0].upper() + new_str[1:]
+    return None
 
-def process_journal_and_booktitle(entry, mapping):
+def process_journal_booktitle(entry, journal_mapping, word_mapping):
     """
     Process journal and booktitle fields in an entry by replacing with abbreviations using mapping.
     """
     for field in ['journal', 'booktitle']:
         if field in entry:
+            if not entry[field].startswith('{'):
+                # something like IEEE_J_AC
+                continue
             normalized = normalize_string(entry[field])
-            if normalized in mapping:
-                entry[field] = mapping[normalized]
+            if normalized.lower() in journal_mapping:
+                # IEEE journal mapping
+                entry[field] = journal_mapping[normalized.lower()]
+            else:
+                # word mapping
+                words = normalized.split(" ")
+                for i, word_i in enumerate(words):
+                    # start_time = time.time()
+                    new_word = perform_word_mapping(word_mapping=word_mapping, word=word_i)
+                    if new_word:
+                        words[i] = new_word
+                    else:
+                        words[i] = word_i[0].upper() + word_i[1:]
+                    # print(f"cost {time.time() - start_time:.1f} s")
+                entry[field] = '{{' + " ".join(words) + '}}'
     return entry
 
 
@@ -325,7 +379,7 @@ def parse_bib(bib_path):
         # pprint.pprint(entry_in_k_v)
     return entries_in_k_v
 
-def filter_sort_deduplicate(entries_in_k_v, citations, mapping):
+def filter_sort_deduplicate(entries_in_k_v, citations, journal_mapping, word_mapping):
     """
     1. Keep entries cited in .aux file
     2. Remove duplicates via normalized text
@@ -339,7 +393,8 @@ def filter_sort_deduplicate(entries_in_k_v, citations, mapping):
             continue
         select_entry = filtered_entries_in_k_v[name] = entries_in_k_v[name]
         select_entry['title'] = process_title(select_entry['title'])
-        filtered_entries_in_k_v[name] = process_journal_and_booktitle(select_entry, mapping)
+        filtered_entries_in_k_v[name] = process_journal_booktitle(select_entry, journal_mapping=journal_mapping,
+                                                                  word_mapping=word_mapping)
     return filtered_entries_in_k_v
 
 
@@ -357,19 +412,26 @@ def write_bib(new_path, entries):
 
 
 
-def process_files(aux_path, ieee_full_bib_path, bib_path, skip_date_check, es_cmd_path, new_bib_path):
+def process_files(aux_path, ieee_full_bib_path, word_addr_csv_path, bib_path, skip_date_check, es_cmd_path, new_bib_path):
 
     # Extract cited entries from .aux file
     citations = parse_aux(aux_path)
 
     # Parse IEEEfull.bib to build abbreviation mapping
-    mapping = parse_ieee_mapping(ieee_full_bib_path)
+    journal_mapping = parse_ieee_mapping(ieee_full_bib_path)
+
+    #
+    start_time = time.time()
+    word_mapping = parse_ITWA_word_mapping(word_addr_csv_path)
+    print(f"parse_ITWA_word_mapping cost {time.time() - start_time:.1f} s")
 
     # Parse .bib file
     entries_in_k_v = parse_bib(bib_path)
 
     # Filter, deduplicate, process fields, and sort
-    filtered_entries_in_k_v = filter_sort_deduplicate(entries_in_k_v, citations, mapping)
+    filtered_entries_in_k_v = filter_sort_deduplicate(entries_in_k_v, citations,
+                                                      journal_mapping=journal_mapping,
+                                                      word_mapping=word_mapping)
     if not skip_date_check:
         # Update citation dates
         new_entries = update_bib_year_and_month(filtered_entries_in_k_v, es_cmd_path)
@@ -377,3 +439,4 @@ def process_files(aux_path, ieee_full_bib_path, bib_path, skip_date_check, es_cm
         new_entries = filtered_entries_in_k_v
     write_bib(new_bib_path, new_entries)
     print(f"New file generated: {new_bib_path}")
+
