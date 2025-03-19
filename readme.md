@@ -69,9 +69,10 @@ es_cmd_path = r'your/path/es.exe'
 ```
 For GUI version, just assign files through the file browser:
 
-<img width="308" alt="image" src="https://github.com/user-attachments/assets/774113a0-cb22-46f1-a8a4-6b4665104e00" />
+<img width="296" alt="image" src="https://github.com/user-attachments/assets/2444338d-2155-4125-93d7-d2a85f6b1aca" />
 
 Click `Save Config` button, then the program will produce a `config.json` file in the current folder, and this .json file will be load automatically on next run.
+The Blue label can be clicked, and automatically jump to URLs.
 
 ### Step 3: Run the Script
 For GUI version, just click `OK` button.
