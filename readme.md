@@ -7,7 +7,7 @@ This project modifies `.bib` files with the following key functionalities:
 
 1. **Remove Unused Entries & Sort**: Filters out unused entries and sorts the remaining entries based on citation order in a given `.aux` file.
 2. **IEEE Journal Name Convertion**: Replaces journal names with their string definitions according to the provided [IEEEfull.bib](https://ctan.org/tex-archive/macros/latex/contrib/IEEEtran/bibtex) mapping.
-3. **Abbreviation for Journals and Conferences**: Using [.CSV file](https://www.issn.org/wp-content/uploads/2024/02/ltwa_current.csv) from [ITWA](https://www.issn.org/services/online-services/access-to-the-ltwa/)
+3. **Abbreviation for Journals and Conferences**: Using [.CSV file](https://www.issn.org/wp-content/uploads/2024/02/ltwa_current.csv) from [ITWA](https://www.issn.org/services/online-services/access-to-the-ltwa/). (Try [Abbreviation online](https://marcinwrochna.github.io/abbrevIso/))
 4. **Title Protection**: Encloses citation titles with additional braces to prevent BibTeX from automatically converting text to lowercase.
 5. **Date Update**: Automatically updates the `year` and `month` fields of citations by extracting publication dates from local PDF files using the Everything search tool.
 

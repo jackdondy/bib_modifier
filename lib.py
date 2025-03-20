@@ -17,6 +17,18 @@ MONTH_MAP = {
     'sep': 'sep', 'oct': 'oct', 'nov': 'nov', 'dec': 'dec'
 }
 
+# refer to https://github.com/marcinwrochna/abbrevIso/blob/master/shortwords.txt
+short_words = {'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'so', 'yet', 'though', 'when', 'whenever', 'where',
+                'whereas', 'wherever', 'while', 'about', 'afore', 'after', 'ago', 'along', 'amid', 'among', 'amongst',
+                'apropos', 'as', 'at', 'atop', 'but', 'by', 'ca', 'circa', 'for', 'from', 'hence', 'in', 'into', 'like',
+                'of', 'off', 'on', 'onto', 'ontop', 'out', 'over', 'per', 'since', 'than', 'til', 'till', 'to', 'unlike',
+                'until', 'unto', 'up', 'upon', 'upside', 'versus', 'via', 'vis-a-vis', 'vs', 'with', 'within', 'für',
+                'und', 'aus', 'zu', 'zur', 'im', 'de', 'et', 'y', 'del', 'en', 'di', 'e', 'da', 'delle', 'della',
+                'dello', 'degli', 'sue', 'el', 'do', 'og', 'i', 'voor', 'van', "dell'", 'dell', 'ed', 'för', 'tot',
+                'vir', 'o', 'its', 'sul',
+}
+
+
 # Extract date information from PDF
 def extract_date_from_pdf(pdf_path):
     try:
@@ -245,16 +257,23 @@ def parse_ITWA_word_mapping(word_addr_csv_path):
         r3 = line.split('\t')
         assert len(r3) == 3
         word_str, new_word, _ = r3
-        if new_word != '':
-            if word_str in word_str_to_pattern_and_mapping:
-                print("warning! duplicate:", word_str)
-            if word_str.startswith('-'):
-                pattern = re.compile(rf'\w+{word_str[1:]}')
-            elif word_str.endswith('-'):
-                pattern = re.compile(rf'{word_str[:-1]}\w+')
-            else:
-                pattern = re.compile(rf'{word_str}')
+        if word_str in word_str_to_pattern_and_mapping:
+            print("warning! duplicate:", word_str)
+        if word_str.startswith('-'):
+            # not required to match the beginning of a word
+            pattern = re.compile(rf'(?<=\w){word_str[1:]}$')
+            if new_word.startswith('-'):
+                new_word = new_word[1:]
+        elif word_str.endswith('-'):
+            pattern = re.compile(rf'^{word_str[:-1]}\w+$')
+        else:
+            pattern = re.compile(rf'^{word_str}$')
+        if new_word != "":
             word_str_to_pattern_and_mapping[word_str] = [pattern, new_word]
+        else:
+            # means not change this word.
+            # (this is not redundant because this word may be matched by other patterns by false)
+            word_str_to_pattern_and_mapping[word_str] = [pattern, word_str]
     return word_str_to_pattern_and_mapping
 
 def remove_outer_braces(s):
@@ -281,12 +300,19 @@ def perform_word_mapping(word_mapping, word):
     Process a word of journal and booktitle names using word_mapping.
     If not match, return  None.
     """
-    word = word.lower()
+    match_length = 0
+    new_word = None
     for key_word_str in word_mapping:
         _pattern, new_str = word_mapping[key_word_str]
-        if _pattern.match(word):
-            return new_str[0].upper() + new_str[1:]
-    return None
+        tmp_new_word, count = _pattern.subn(new_str, word)
+        # using the longest match
+        if count > 0 and len(key_word_str) > match_length:
+            match_length = len(key_word_str)
+            new_word = tmp_new_word
+    if new_word:
+        return new_word[0].upper() + new_word[1:]
+    else:
+        return new_word
 
 def process_journal_booktitle(entry, journal_mapping, word_mapping):
     """
@@ -304,15 +330,18 @@ def process_journal_booktitle(entry, journal_mapping, word_mapping):
             else:
                 # word mapping
                 words = normalized.split(" ")
+                new_words = []
                 for i, word_i in enumerate(words):
                     # start_time = time.time()
-                    new_word = perform_word_mapping(word_mapping=word_mapping, word=word_i)
+                    if word_i.lower() in short_words:
+                        continue
+                    new_word = perform_word_mapping(word_mapping=word_mapping, word=word_i.lower())
                     if new_word:
-                        words[i] = new_word
+                        new_words.append(new_word)
                     else:
-                        words[i] = word_i[0].upper() + word_i[1:]
+                        new_words.append(word_i[0].upper() + word_i[1:])
                     # print(f"cost {time.time() - start_time:.1f} s")
-                entry[field] = '{{' + " ".join(words) + '}}'
+                entry[field] = '{{' + " ".join(new_words) + '}}'
     return entry
 
 
