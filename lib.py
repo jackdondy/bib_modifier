@@ -366,12 +366,12 @@ def parse_bib(bib_path):
     entries_in_k_v = {}
     for entry in entries:
         # Parse into key-value pairs
-        m = re.match(r'\s*@(?P<type>\S+)\{(?P<name>\S+),', entry, flags=re.IGNORECASE)
+        m = re.match(r'\s*@(?P<__type>\S+)\{(?P<name>\S+),', entry, flags=re.IGNORECASE)
         if not m:
             continue
-        type = m.groupdict()['type']
+        type = m.groupdict()['__type']
         name = m.groupdict()['name']
-        entry_in_k_v = {'type': type}
+        entry_in_k_v = {'__type': type}
         pos_in_src_entry = m.end()
         while True:
             if pos_in_src_entry > len(entry) + 1:
@@ -432,9 +432,9 @@ def write_bib(new_path, entries):
     with open(new_path, 'w', encoding='utf-8') as f:
         for entry_name in entries:
             entry = entries[entry_name]
-            f.write(f'@{entry['type']}{{{entry_name},\n')
+            f.write(f'@{entry['__type']}{{{entry_name},\n')
             for key in entry:
-                if key == 'type':
+                if key == '__type':
                     continue
                 f.write(f'    {key}={entry[key]},\n')
             f.write('}\n\n')
