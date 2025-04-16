@@ -424,6 +424,21 @@ def filter_sort_deduplicate(entries_in_k_v, citations, journal_mapping, word_map
         select_entry['title'] = process_title(select_entry['title'])
         filtered_entries_in_k_v[name] = process_journal_booktitle(select_entry, journal_mapping=journal_mapping,
                                                                   word_mapping=word_mapping)
+        # add "Proc." to proceedings
+        # & remove the year in booktitle
+        if select_entry['__type'] == 'inproceedings':
+            if 'booktitle' in select_entry:
+                # 替换四位数字（年份）
+                _title = re.sub(r'\b\d{4}\b', '', select_entry['booktitle'])
+                _title2 = normalize_string(_title)
+                if not _title2.startswith('Proc.'):
+                    select_entry['booktitle'] = '{{Proc. ' + _title2 + '}}'
+                else:
+                    select_entry['booktitle'] = '{{' + _title2 + '}}'
+            else:
+                print(f"\033[91mWarning: 'booktitle' not found in this 'inproceeding' entry\033[0m")
+            pass
+            # if select_entry['booktitle']
     return filtered_entries_in_k_v
 
 
@@ -436,7 +451,7 @@ def write_bib(new_path, entries):
             for key in entry:
                 if key == '__type':
                     continue
-                f.write(f'    {key}={entry[key]},\n')
+                f.write(f'    {key}={re.sub(r'\s+', ' ', entry[key])},\n')
             f.write('}\n\n')
 
 
