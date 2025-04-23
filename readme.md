@@ -11,6 +11,32 @@ This project modifies `.bib` files with the following key functionalities:
 4. **Title Protection**: Encloses citation titles with additional braces to prevent BibTeX from automatically converting text to lowercase.
 5. **Date Update**: Automatically updates the `year` and `month` fields of citations by extracting publication dates from local PDF files using the Everything search tool.
 
+## Example
+```diff
+ @inproceedings{gopalakrishnan2019robust,
+-  title={Robust wireless fingerprinting via complex-valued neural networks},
++  title={{Robust wireless fingerprinting via complex-valued neural networks}},
+   author={Gopalakrishnan, Soorya and Cekic, Metehan and Madhow, Upamanyu},
+-  booktitle={2019 IEEE Global Communications Conference (GLOBECOM)},
++  booktitle={{Proc. IEEE Global Commun. Conf. (GLOBECOM)}},
+   pages={1--6},
+   year={2019},
+   organization={IEEE}
+ }
+
+ @article{pham2016channel,
+-  title={Channel estimation and data detection for insufficient cyclic prefix MIMO-OFDM},
++  title={{Channel estimation and data detection for insufficient cyclic prefix MIMO-OFDM}},
+   author={Pham, Tri and Le-Ngoc, Tho and Woodward, Graeme K and Martin, Philippa A},
+-  journal={IEEE Transactions on Vehicular Technology},
++  journal=IEEE_J_VT,
+   volume={66},
+   number={6},
+   pages={4756--4768},
+   year={2016},
+   publisher={IEEE}
+ }
+```
 
 
 ## Installation Guide
