@@ -108,6 +108,7 @@ For pure command line version, Execute the script in your terminal:
 python main_with_date_check.py
 ```
 
+### Step 3.5: Date Update
 When dealing with PDF files, the program will output
 ```
 -----------------press Enter for first result / input index to select a file / a new path / month and year like '2000 jun' / 'S' to skip / 'SS' to skip all / 'DD' to auto run all:

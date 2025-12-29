@@ -63,13 +63,22 @@ es_cmd_path = r'your/path/es.exe'
 # es_cmd_path = None         # 使用系统默认的 Everything 路径
 ```
 
+对于 GUI 版本，只需通过文件浏览器指定文件：
+
+<img width="296" alt="image" src="https://github.com/user-attachments/assets/2444338d-2155-4125-93d7-d2a85f6b1aca" />
+
+点击 `Save Config` 按钮后，程序会在当前文件夹下生成一个 `config.json` 文件，并且在下次运行时会自动加载该 `.json` 文件。  
+蓝色标签是可点击的，点击后会自动跳转到对应的 URL。
+
+
 ### 第 3 步：运行脚本
 在终端中执行脚本：
 
 ```bash
 python main_with_date_check.py
 ```
-
+### 第 3.5 步：日期更新（可选）
+如果指定了`skip_date_check=False`，则会调用 Everything 搜索工具来查找 PDF 文件。
 在处理 PDF 文件时，如果在系统中找到与引文名称匹配的任何 PDF 文件，程序会输出：
 ```
 -----------------press Enter for first result / input index to select a file / a new path / month and year like '2000 jun' / 'S' to skip / 'SS' to skip all / 'DD' to auto run all:
