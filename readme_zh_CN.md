@@ -79,7 +79,7 @@ python main_with_date_check.py
 注：GUI中的蓝色标签是可点击的，点击后会自动跳转到对应的 URL。
 
 通过`Browse`按钮指定文件路径：
-`new_bib_path`为该程序将输出的bib文件路径。
+`New .bib Path`为该程序将输出的bib文件路径。
 设置 `Skip Date Check` 为 `False` 如果你希望搜索本地 PDF 文件以更新引文的 `year` 和 `month` 字段。
 设置 `ES Cmd Path` 为 `None` 将使程序使用系统默认的 Everything CLI 路径。你可以在 Windows 命令行中输入 `es` 来测试默认的 Everything CLI。
 
@@ -87,7 +87,7 @@ python main_with_date_check.py
 
 
 ### 第 3.5 步：日期更新（可选）
-如果指定了`skip_date_check=False`，则会调用 Everything 搜索工具来查找 PDF 文件。
+如果指定了`Skip Date Check`为`False`，则会调用 Everything 搜索工具来查找 PDF 文件。
 在处理 PDF 文件时，如果在系统中找到与引文名称匹配的任何 PDF 文件，程序会在命令行输出：
 ```
 -----------------press Enter for first result / input index to select a file / a new path / month and year like '2000 jun' / 'S' to skip / 'SS' to skip all / 'DD' to auto run all:
